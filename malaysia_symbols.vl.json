@@ -1,0 +1,55 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "title": "Malaysia Assault Cases (Counts) — 2023",
+    "width": 920,
+    "height": 560,
+    "background": "#e6f2ff",
+    "projection": { "type": "conicEqualArea", "center": [109.5, 3.5], "parallels": [2, 6], "scale": 2500 },
+    "layer": [
+        { "data": { "sphere": {} }, "mark": { "type": "geoshape", "fill": "#dff0ff" } },
+        { "data": { "graticule": { "step": [5, 5] } }, "mark": { "type": "geoshape", "stroke": "#9bbcd1", "strokeWidth": 0.6, "opacity": 0.7 } },
+        {
+            "data": { "url": "malaysia.json", "format": { "type": "topojson", "feature": "mytopojson" } },
+            "mark": { "type": "geoshape", "fill": "#f4fbff", "stroke": "#9ec0d6", "strokeWidth": 0.6 }
+        },
+        {
+            "data": { "url": "data/states_assault_cases_2023.csv", "format": { "type": "csv" } },
+            "transform": [
+            {
+            "lookup": "state",
+            "from": {
+                "data": {
+                "values": [
+                    { "alias": "Penang", "canon": "Pulau Pinang" },
+                    { "alias": "Malacca", "canon": "Melaka" },
+                    { "alias": "WP Kuala Lumpur", "canon": "Kuala Lumpur" },
+                    { "alias": "W.P. Kuala Lumpur", "canon": "Kuala Lumpur" },
+                    { "alias": "WP Labuan", "canon": "Labuan" },
+                    { "alias": "WP Putrajaya", "canon": "Putrajaya" }
+                ]
+                },
+                "key": "alias",
+                "fields": ["canon"]
+            }
+            },
+            { "calculate": "datum.canon ? datum.canon : datum.state", "as": "state_std" },
+            {
+            "lookup": "state_std",
+            "from": { "data": { "url": "data/state_centroids.csv" }, "key": "state", "fields": ["lon", "lat"] }
+            }
+        ],
+        "mark": { "type": "circle", "opacity": 0.75, "stroke": "#0f172a", "strokeWidth": 0.6 },
+        "encoding": {
+            "longitude": { "field": "lon" },
+            "latitude": { "field": "lat" },
+            "size": { "field": "crimes", "type": "quantitative", "title": "Assault cases (count)", "scale": { "type": "sqrt", "range": [0, 2600] } },
+            "color": { "field": "crimes", "type": "quantitative", "title": "Assault cases (count)", "scale": { "scheme": "oranges" } },
+            "tooltip": [
+                { "field": "state_std", "title": "State" },
+                { "field": "crimes", "title": "Assault cases", "format": "," },
+                {"field":"year","title":"Year"}
+            ]
+        }
+        }
+    ]
+    }
